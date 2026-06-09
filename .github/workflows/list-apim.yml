@@ -2,7 +2,7 @@ name: List Azure APIM APIs
 
 on:
   workflow_dispatch:
-    # ➔ AQUÍ SE DEFINE EL MENÚ DESPLEGABLE
+    # ➔ AQUÍ SE DEFINE EL MENÚ DESPLEGABLE - Testing APIM
     inputs:
       entorno:
         description: 'Selecciona el entorno para ejecutar la auditoría'
