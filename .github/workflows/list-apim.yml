@@ -36,7 +36,7 @@ jobs:
           tenant-id: ${{ vars.AZURE_TENANT_ID }}
           subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
 
-      # 2. Conectarse al APIM existente y extraer la lista de APIs
+        # 2. Conectarse al APIM existente y extraer la lista de APIs
       - name: Fetch and List APIs
         uses: azure/CLI@v2
         with:
@@ -45,8 +45,8 @@ jobs:
             echo "Ejecutando auditoría en el entorno: ${{ github.event.inputs.entorno }}..."
             echo "Conectando a Azure APIM: joe-test-apim..."
             
-            # Comando CLI para listar las APIs
+            # Comando CLI corregido usando --service-name
             az apim api list \
-              --name "joe-test-apim" \
+              --service-name "joe-test-apim" \
               --resource-group "rg-joe-test" \
               --output table
