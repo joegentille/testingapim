@@ -1,0 +1,42 @@
+name: List Azure APIM APIs
+
+on:
+  workflow_dispatch: # Te permite ejecutarlo manualmente desde la pestaña "Actions" de GitHub
+
+permissions:
+  id-token: write # REQUISITO OBLIGATORIO para usar OIDC / Federated Credentials
+  contents: read
+
+env:
+  AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+  AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+  AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+  RESOURCE_GROUP: "rg-joe-test"
+  APIM_NAME: "joe-test-apim"
+
+jobs:
+  audit-apim:
+    runs-on: ubuntu-latest
+    steps:
+      
+      # 1. Autenticación transparente con Azure usando OIDC
+      - name: Azure Login via OIDC
+        uses: azure/login@v2
+        with:
+          client-id: ${{ env.AZURE_CLIENT_ID }}
+          tenant-id: ${{ env.AZURE_TENANT_ID }}
+          subscription-id: ${{ env.AZURE_SUBSCRIPTION_ID }}
+
+      # 2. Conectarse al APIM existente y extraer la lista de APIs
+      - name: Fetch and List APIs
+        uses: azure/azure-cli-deploy@v2
+        with:
+          azcliversion: latest
+          inlineScript: |
+            echo "Conectando a Azure APIM: ${{ env.APIM_NAME }}..."
+            
+            # Comando CLI para listar las APIs del recurso existente en formato de tabla
+            az apim api list \
+              --name ${{ env.APIM_NAME }} \
+              --resource-group ${{ env.RESOURCE_GROUP }} \
+              --output table
