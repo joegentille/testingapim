@@ -1,42 +1,52 @@
 name: List Azure APIM APIs
 
 on:
-  workflow_dispatch: # Te permite ejecutarlo manualmente desde la pestaña "Actions" de GitHub
+  workflow_dispatch:
+    # ➔ AQUÍ SE DEFINE EL MENÚ DESPLEGABLE
+    inputs:
+      entorno:
+        description: 'Selecciona el entorno para ejecutar la auditoría'
+        required: true
+        default: 'int09'
+        type: choice
+        options:
+          - int09
+          - nonprod
+          - stage
+          - prod
 
 permissions:
   id-token: write # REQUISITO OBLIGATORIO para usar OIDC / Federated Credentials
   contents: read
 
-env:
-  AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
-  AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
-  AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-  RESOURCE_GROUP: "rg-joe-test"
-  APIM_NAME: "joe-test-apim"
-
 jobs:
   audit-apim:
     runs-on: ubuntu-latest
+    
+    # ➔ ASIGNACIÓN DINÁMICA: Carga el entorno seleccionado en el menú desplegable
+    environment: ${{ github.event.inputs.entorno }}
+
     steps:
-      
       # 1. Autenticación transparente con Azure usando OIDC
       - name: Azure Login via OIDC
         uses: azure/login@v2
         with:
-          client-id: ${{ env.AZURE_CLIENT_ID }}
-          tenant-id: ${{ env.AZURE_TENANT_ID }}
-          subscription-id: ${{ env.AZURE_SUBSCRIPTION_ID }}
+          # Al estar amarrado al environment dinámico, tomará el client-id correcto de ese entorno
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
 
       # 2. Conectarse al APIM existente y extraer la lista de APIs
       - name: Fetch and List APIs
-        uses: azure/azure-cli-deploy@v2
+        uses: azure/CLI@v2
         with:
           azcliversion: latest
           inlineScript: |
-            echo "Conectando a Azure APIM: ${{ env.APIM_NAME }}..."
+            echo "Ejecutando auditoría en el entorno: ${{ github.event.inputs.entorno }}..."
+            echo "Conectando a Azure APIM: joe-test-apim..."
             
-            # Comando CLI para listar las APIs del recurso existente en formato de tabla
+            # Comando CLI para listar las APIs
             az apim api list \
-              --name ${{ env.APIM_NAME }} \
-              --resource-group ${{ env.RESOURCE_GROUP }} \
+              --name "joe-test-apim" \
+              --resource-group "rg-joe-test" \
               --output table
